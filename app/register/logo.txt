@@ -1,0 +1,36 @@
+import { GraduationsCap, Sparkles } from "lucide-react";
+
+interface LogoProps {
+  size?: "sm" | "md" | "lg";
+}
+
+export default function Logo({ size = "md" }: LogoProps) {
+  // ზომების განსაზღვრა
+  const sizeClasses = {
+    sm: "w-12 h-12 text-xl",
+    md: "w-20 h-20 text-3xl",
+    lg: "w-28 h-28 text-5xl",
+  };
+
+  const iconSizes = {
+    sm: 24,
+    md: 38,
+    lg: 52,
+  };
+
+  return (
+    <div
+      className={`relative flex items-center justify-center rounded-full bg-gradient-to-tr from-purple-600 via-indigo-500 to-emerald-400 p-0.5 shadow-lg shadow-purple-500/20 transition-transform hover:scale-105 ${sizeClasses[size]}`}
+    >
+      {/* შიდა თეთრი/იასამნისფერი წრე */}
+      <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-900 text-white">
+        <GraduationsCap size={iconSizes[size]} className="text-emerald-400" />
+      </div>
+
+      {/* პატარა ბრწყინვალების ეფექტი */}
+      <div className="absolute -top-1 -right-1 rounded-full bg-emerald-400 p-1 text-slate-900 shadow-sm">
+        <Sparkles size={size === "sm" ? 10 : size === "md" ? 14 : 18} />
+      </div>
+    </div>
+  );
+}
