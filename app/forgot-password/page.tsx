@@ -4,7 +4,37 @@ import { useState } from "react";
 import Link from "next/link";
 import { GraduationCap, Sparkles, ArrowLeft, Mail } from "lucide-react";
 
-// CSS ლოგოს კომპონენტი
+
+const translations = {
+  ka: {
+    title: "პაროლის აღდგენა",
+    subtitle: "შეიყვანეთ ელ-ფოსტის მისამართი და ჩვენ გამოგიგზავნით პაროლის აღდგენის ბმულს.",
+    emailLabel: "ელ-ფოსტა",
+    submitBtn: "ბმულის გაგზავნა",
+    sendingBtn: "იგზავნება...",
+    checkEmailTitle: "შეამოწმეთ ელ-ფოსტა",
+    checkEmailDesc: "პაროლის აღდგენის ბმული გაიგზავნა მისამართზე:",
+    resendOrChange: "ხელახლა გაგზავნა ან მეილის შეცვლა",
+    rememberPassword: "გახსოვთ პაროლი?",
+    loginLink: "შესვლა",
+    backToLogin: "ავტორიზაციაზე დაბრუნება",
+  },
+  en: {
+    title: "Reset Password",
+    subtitle: "Enter your email address and we'll send you a link to reset your password.",
+    emailLabel: "Email Address",
+    submitBtn: "Send Reset Link",
+    sendingBtn: "Sending...",
+    checkEmailTitle: "Check your email",
+    checkEmailDesc: "We have sent a password reset link to:",
+    resendOrChange: "Resend link or change email",
+    rememberPassword: "Remember your password?",
+    loginLink: "Login",
+    backToLogin: "Back to Login",
+  },
+};
+
+
 function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const sizeClasses = {
     sm: "w-12 h-12",
@@ -34,18 +64,68 @@ function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
 }
 
 export default function ForgotPasswordPage() {
+  const [lang, setLang] = useState<"ka" | "en">("ka");
+  const t = translations[lang];
+
   const [submitted, setSubmitted] = useState(false);
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    if (!email) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "შეცდომა მეილის გაგზავნისას");
+      }
+
       setSubmitted(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-emerald-50/50 via-white to-blue-50/30 p-4 text-slate-800">
+      {/* ენის გადამრთველი ღილაკი */}
+      <div className="absolute top-6 right-6 z-20 flex gap-1 rounded-full border border-gray-200 bg-white/80 p-1 shadow-sm backdrop-blur-md">
+        <button
+          onClick={() => setLang("ka")}
+          className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
+            lang === "ka"
+              ? "bg-emerald-500 text-white shadow-sm"
+              : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          GE
+        </button>
+        <button
+          onClick={() => setLang("en")}
+          className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
+            lang === "en"
+              ? "bg-emerald-500 text-white shadow-sm"
+              : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          EN
+        </button>
+      </div>
+
       {/* ფონური დეკორაციები */}
       <div className="absolute top-10 left-10 h-28 w-28 rounded-full bg-emerald-200/40 blur-xl" />
       <div className="absolute bottom-12 right-10 h-32 w-32 rounded-full bg-purple-200/40 blur-xl" />
@@ -55,16 +135,22 @@ export default function ForgotPasswordPage() {
           <div className="mb-3">
             <Logo size="md" />
           </div>
-          <h1 className="text-2xl font-black text-slate-800">Reset Password</h1>
-          <p className="mt-1 text-xs text-gray-500">
-            Enter your email address and we'll send you a link to reset your password.
-          </p>
+          <h1 className="text-2xl font-black text-slate-800">{t.title}</h1>
+          <p className="mt-1 text-xs text-gray-500">{t.subtitle}</p>
         </div>
+
+        {error && (
+          <div className="mt-4 p-3 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 text-xs font-semibold text-center">
+            {error}
+          </div>
+        )}
 
         {!submitted ? (
           <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-700">Email Address</label>
+              <label className="mb-1 block text-xs font-semibold text-gray-700">
+                {t.emailLabel}
+              </label>
               <input
                 type="email"
                 required
@@ -77,40 +163,49 @@ export default function ForgotPasswordPage() {
 
             <button
               type="submit"
-              className="mt-2 w-full rounded-xl bg-emerald-500 py-3 font-bold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.99]"
+              disabled={loading}
+              className="mt-2 w-full rounded-xl bg-emerald-500 py-3 font-bold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.99] disabled:opacity-50"
             >
-              Send Reset Link
+              {loading ? t.sendingBtn : t.submitBtn}
             </button>
           </form>
         ) : (
-          <div className="mt-6 flex flex-col items-center text-center rounded-2xl bg-emerald-50 p-6 border border-emerald-100">
+          <div className="mt-6 flex flex-col items-center rounded-2xl border border-emerald-100 bg-emerald-50 p-6 text-center">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
               <Mail size={24} />
             </div>
-            <h3 className="text-sm font-bold text-emerald-900">Check your email</h3>
+            <h3 className="text-sm font-bold text-emerald-900">
+              {t.checkEmailTitle}
+            </h3>
             <p className="mt-1 text-xs text-emerald-700">
-              We have sent a password reset link to <br />
+              {t.checkEmailDesc} <br />
               <span className="font-semibold text-slate-800">{email}</span>
             </p>
             <button
               onClick={() => setSubmitted(false)}
               className="mt-4 text-xs font-bold text-emerald-600 hover:underline"
             >
-              Resend link or change email
+              {t.resendOrChange}
             </button>
           </div>
         )}
 
         <div className="mt-6 text-center text-xs text-gray-500">
-          Remember your password?{" "}
-          <Link href="/login" className="font-bold text-emerald-600 hover:underline">
-            Login
+          {t.rememberPassword}{" "}
+          <Link
+            href="/login"
+            className="font-bold text-emerald-600 hover:underline"
+          >
+            {t.loginLink}
           </Link>
         </div>
       </div>
 
-      <Link href="/login" className="mt-6 flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors">
-        <ArrowLeft size={14} /> Back to Login
+      <Link
+        href="/login"
+        className="mt-6 flex items-center gap-2 text-xs font-semibold text-gray-500 transition-colors hover:text-gray-700"
+      >
+        <ArrowLeft size={14} /> {t.backToLogin}
       </Link>
     </main>
   );

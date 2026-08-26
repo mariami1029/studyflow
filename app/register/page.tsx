@@ -5,7 +5,54 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GraduationCap, Sparkles } from "lucide-react";
 
-// CSS ლოგოს კომპონენტი
+
+const translations = {
+  ka: {
+    title: "ანგარიშის შექმნა",
+    subtitle: "შემოუერთდი StudyFlow-ს და მოაწესრიგე შენი აკადემიური ცხოვრება",
+    fullNameLabel: "სრული სახელი",
+    emailLabel: "ელ-ფოსტა",
+    passwordLabel: "პაროლი",
+    confirmPasswordLabel: "დაადასტურეთ პაროლი",
+    show: "ჩვენება",
+    hide: "დამალვა",
+    passMustContain: "პაროლი უნდა შეიცავდეს:",
+    ruleMinLength: "სულ მცირე 8 სიმბოლო",
+    ruleUpperLower: "დიდ და პატარა ასოებს",
+    ruleNumSymbol: "სულ მცირე 1 ციფრსა და 1 სიმბოლოს",
+    ruleLatin: "მხოლოდ ლათინურ ასოებს",
+    submitBtn: "ანგარიშის შექმნა",
+    loadingBtn: "ანგარიში იქმნება...",
+    alreadyHaveAccount: "უკვე გაქვს ანგარიში?",
+    loginLink: "შესვლა",
+    backHome: "← მთავარ გვერდზე დაბრუნება",
+    errPasswordMismatch: "პაროლები ერთმანეთს არ ემთხვევა",
+    errGeneral: "შეცდომა რეგისტრაციისას",
+  },
+  en: {
+    title: "Create Account",
+    subtitle: "Join StudyFlow and organize your academic life",
+    fullNameLabel: "Full Name",
+    emailLabel: "Email Address",
+    passwordLabel: "Password",
+    confirmPasswordLabel: "Confirm Password",
+    show: "Show",
+    hide: "Hide",
+    passMustContain: "Password must contain:",
+    ruleMinLength: "At least 8 characters",
+    ruleUpperLower: "Uppercase and lowercase letters",
+    ruleNumSymbol: "At least 1 number and 1 symbol",
+    ruleLatin: "Only Latin characters",
+    submitBtn: "Create Account",
+    loadingBtn: "Creating Account...",
+    alreadyHaveAccount: "Already have an account?",
+    loginLink: "Login",
+    backHome: "← Back to Home",
+    errPasswordMismatch: "Passwords do not match",
+    errGeneral: "Registration failed",
+  },
+};
+
 function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const sizeClasses = {
     sm: "w-12 h-12",
@@ -36,9 +83,12 @@ function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [lang, setLang] = useState<"ka" | "en">("ka");
+  const t = translations[lang];
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,50 +97,69 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // პაროლის ვალიდაცია
   const hasMinLength = password.length >= 8;
   const hasUpperAndLower = /[a-z]/.test(password) && /[A-Z]/.test(password);
   const hasNumberAndSymbol = /[0-9]/.test(password) && /[^a-zA-Z0-9]/.test(password);
-  const isOnlyLatin = password.length > 0 && /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]+$/.test(password);
+  const isOnlyLatin =
+    password.length > 0 &&
+    /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]+$/.test(password);
 
-  // რეგისტრაციის ფუნქცია
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (password !== confirmPassword) {
-      setError("პაროლები ერთმანეთს არ ემთხვევა");
+      setError(t.errPasswordMismatch);
       return;
     }
 
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: fullName,
-          email,
-          password,
-        }),
-      });
+      const res = await fetch(
+        "https://studyflow-backend-wrat.onrender.com/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: fullName,
+            email,
+            password,
+          }),
+        }
+      );
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "რეგისტრაცია ვერ მოხერხდა");
+        throw new Error(data.error || data.message || t.errGeneral);
       }
 
-      // რეგისტრაციით მიღებული იუზერის შენახვა localStorage-ში
+      try {
+        const mailRes = await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            fullName: fullName,
+          }),
+        });
+
+        const mailData = await mailRes.json();
+        if (!mailRes.ok) {
+          console.error("Email Error:", mailData);
+        }
+      } catch (e) {
+        console.error("Email Fetch Error:", e);
+      }
+
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
       }
 
-      // გადამისამართება დეშბორდზე
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "შეცდომა რეგისტრაციისას");
+      setError(err.message || t.errGeneral);
     } finally {
       setLoading(false);
     }
@@ -98,6 +167,30 @@ export default function RegisterPage() {
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-emerald-50/50 via-white to-blue-50/30 p-4 text-slate-800">
+      {/* ენის გადამრთველი ღილაკი */}
+      <div className="absolute top-6 right-6 z-20 flex gap-1 rounded-full border border-gray-200 bg-white/80 p-1 shadow-sm backdrop-blur-md">
+        <button
+          onClick={() => setLang("ka")}
+          className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
+            lang === "ka"
+              ? "bg-emerald-500 text-white shadow-sm"
+              : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          GE
+        </button>
+        <button
+          onClick={() => setLang("en")}
+          className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
+            lang === "en"
+              ? "bg-emerald-500 text-white shadow-sm"
+              : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          EN
+        </button>
+      </div>
+
       <div className="absolute top-10 left-10 h-28 w-28 rounded-full bg-emerald-200/40 blur-xl" />
       <div className="absolute bottom-12 right-10 h-32 w-32 rounded-full bg-purple-200/40 blur-xl" />
 
@@ -106,23 +199,21 @@ export default function RegisterPage() {
           <div className="mb-3">
             <Logo size="md" />
           </div>
-          <h1 className="text-2xl font-black text-slate-800">Create Account</h1>
-          <p className="mt-1 text-xs text-gray-500">
-            Join StudyFlow and organize your academic life
-          </p>
+          <h1 className="text-2xl font-black text-slate-800">{t.title}</h1>
+          <p className="mt-1 text-xs text-gray-500">{t.subtitle}</p>
         </div>
 
-        {/* შეცდომის შეტყობინება */}
         {error && (
-          <div className="mt-4 rounded-xl bg-rose-50 p-3 text-center text-xs font-semibold text-rose-600 border border-rose-200">
+          <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-center text-xs font-semibold text-rose-600">
             {error}
           </div>
         )}
 
         <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
-          {/* Full Name */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-700">Full Name</label>
+            <label className="mb-1 block text-xs font-semibold text-gray-700">
+              {t.fullNameLabel}
+            </label>
             <input
               name="fullName"
               type="text"
@@ -134,9 +225,10 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Email */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-700">Email Address</label>
+            <label className="mb-1 block text-xs font-semibold text-gray-700">
+              {t.emailLabel}
+            </label>
             <input
               name="email"
               type="email"
@@ -148,9 +240,10 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Password */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-700">Password</label>
+            <label className="mb-1 block text-xs font-semibold text-gray-700">
+              {t.passwordLabel}
+            </label>
             <div className="relative">
               <input
                 name="password"
@@ -159,46 +252,64 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 pr-10"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 pr-10 text-sm text-gray-800 outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-medium"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400 hover:text-gray-600"
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? t.hide : t.show}
               </button>
             </div>
 
-            {/* პაროლის ვალიდაციის ინდიკატორები */}
             <div className="mt-2.5 flex flex-col gap-1.5 rounded-xl bg-gray-50 p-3 text-xs">
-              <p className="font-semibold text-gray-500 mb-0.5">Password must contain:</p>
-              
-              <div className={`flex items-center gap-2 transition-colors ${hasMinLength ? "text-emerald-600 font-medium" : "text-gray-400"}`}>
+              <p className="mb-0.5 font-semibold text-gray-500">
+                {t.passMustContain}
+              </p>
+
+              <div
+                className={`flex items-center gap-2 transition-colors ${
+                  hasMinLength ? "font-medium text-emerald-600" : "text-gray-400"
+                }`}
+              >
                 <span>{hasMinLength ? "✓" : "○"}</span>
-                <span>At least 8 characters</span>
+                <span>{t.ruleMinLength}</span>
               </div>
 
-              <div className={`flex items-center gap-2 transition-colors ${hasUpperAndLower ? "text-emerald-600 font-medium" : "text-gray-400"}`}>
+              <div
+                className={`flex items-center gap-2 transition-colors ${
+                  hasUpperAndLower ? "font-medium text-emerald-600" : "text-gray-400"
+                }`}
+              >
                 <span>{hasUpperAndLower ? "✓" : "○"}</span>
-                <span>Uppercase and lowercase letters</span>
+                <span>{t.ruleUpperLower}</span>
               </div>
 
-              <div className={`flex items-center gap-2 transition-colors ${hasNumberAndSymbol ? "text-emerald-600 font-medium" : "text-gray-400"}`}>
+              <div
+                className={`flex items-center gap-2 transition-colors ${
+                  hasNumberAndSymbol ? "font-medium text-emerald-600" : "text-gray-400"
+                }`}
+              >
                 <span>{hasNumberAndSymbol ? "✓" : "○"}</span>
-                <span>At least 1 number and 1 symbol</span>
+                <span>{t.ruleNumSymbol}</span>
               </div>
 
-              <div className={`flex items-center gap-2 transition-colors ${isOnlyLatin ? "text-emerald-600 font-medium" : "text-gray-400"}`}>
+              <div
+                className={`flex items-center gap-2 transition-colors ${
+                  isOnlyLatin ? "font-medium text-emerald-600" : "text-gray-400"
+                }`}
+              >
                 <span>{isOnlyLatin ? "✓" : "○"}</span>
-                <span>Only Latin characters</span>
+                <span>{t.ruleLatin}</span>
               </div>
             </div>
           </div>
 
-          {/* Confirm Password */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-700">Confirm Password</label>
+            <label className="mb-1 block text-xs font-semibold text-gray-700">
+              {t.confirmPasswordLabel}
+            </label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
@@ -206,14 +317,14 @@ export default function RegisterPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 pr-10"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 pr-10 text-sm text-gray-800 outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-medium"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400 hover:text-gray-600"
               >
-                {showConfirmPassword ? "Hide" : "Show"}
+                {showConfirmPassword ? t.hide : t.show}
               </button>
             </div>
           </div>
@@ -223,20 +334,26 @@ export default function RegisterPage() {
             disabled={loading}
             className="mt-2 w-full rounded-xl bg-emerald-500 py-3 font-bold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.99] disabled:opacity-50"
           >
-            {loading ? "Creating Account..." : "Create Account"}
+            {loading ? t.loadingBtn : t.submitBtn}
           </button>
         </form>
 
         <div className="mt-6 text-center text-xs text-gray-500">
-          Already have an account?{" "}
-          <Link href="/login" className="font-bold text-emerald-600 hover:underline">
-            Login
+          {t.alreadyHaveAccount}{" "}
+          <Link
+            href="/login"
+            className="font-bold text-emerald-600 hover:underline"
+          >
+            {t.loginLink}
           </Link>
         </div>
       </div>
 
-      <Link href="/" className="mt-6 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors">
-        ← Back to Home
+      <Link
+        href="/"
+        className="mt-6 text-xs font-semibold text-gray-500 transition-colors hover:text-gray-700"
+      >
+        {t.backHome}
       </Link>
     </main>
   );

@@ -1,12 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   BookOpen,
   CheckCircle2,
   Clock,
   GraduationCap,
-  LayoutDashboard,
-  LogOut,
+  LayoutDashboard, 
+  LogOut, 
   Plus,
   Sparkles,
   X,
@@ -23,7 +25,7 @@ import {
   Send
 } from "lucide-react";
 
-// Logo Component
+
 function Logo({ size = "sm" }: { size?: "sm" | "md" | "lg" }) {
   const sizeClasses = {
     sm: "w-10 h-10",
@@ -45,62 +47,36 @@ function Logo({ size = "sm" }: { size?: "sm" | "md" | "lg" }) {
   );
 }
 
-// Initial Data
-const INITIAL_SUBJECTS = [
-  { id: 1, code: "CS-201", title: "Data Structures", teacher: "Prof. Giorgi Beridze", progress: 65 },
-  { id: 2, code: "WEB-302", title: "Web Architecture", teacher: "Prof. Aleks Nozadze", progress: 40 },
-  { id: 3, code: "MATH-101", title: "Linear Algebra", teacher: "Prof. Elene Dolidze", progress: 85 },
-];
-
-const INITIAL_ASSIGNMENTS = [
-  { id: 1, title: "Midterm Exam Project", subject: "Data Structures", code: "CS", date: "2026-08-05", time: "10:00", status: "Pending", completed: false, grade: "" },
-  { id: 2, title: "Assignment #4 - Matrices", subject: "Linear Algebra", code: "MA", date: "2026-08-10", time: "14:00", status: "Pending", completed: false, grade: "" },
-  { id: 3, title: "Next.js Project Submission", subject: "Web Architecture", code: "WEB", date: "2026-08-15", time: "23:59", status: "In Progress", completed: false, grade: "" },
-];
-
-const INITIAL_SCHEDULE = [
-  { id: 1, day: "Monday", startTime: "09:00", endTime: "10:30", subject: "Data Structures", room: "Auditorium 302", type: "Lecture", attendance: "Pending" },
-  { id: 2, day: "Monday", startTime: "11:00", endTime: "12:30", subject: "Linear Algebra", room: "Building B, Hall 2", type: "Seminar", attendance: "Pending" },
-  { id: 3, day: "Tuesday", startTime: "10:00", endTime: "11:30", subject: "Web Architecture", room: "Lab 105", type: "Lab", attendance: "Pending" },
-  { id: 4, day: "Wednesday", startTime: "09:00", endTime: "10:30", subject: "Data Structures", room: "Auditorium 302", type: "Seminar", attendance: "Pending" },
-  { id: 5, day: "Thursday", startTime: "11:00", endTime: "12:30", subject: "Linear Algebra", room: "Building B, Hall 2", type: "Lecture", attendance: "Pending" },
-  { id: 6, day: "Friday", startTime: "10:00", endTime: "12:00", subject: "Web Architecture", room: "Online / MS Teams", type: "Practicum", attendance: "Pending" },
-];
-
-const INITIAL_EXAMS = [
-  { id: 1, subject: "Data Structures", type: "Midterm Exam", date: "2026-08-05", time: "10:00", room: "Auditorium 302", attendance: "Pending" },
-  { id: 2, subject: "Linear Algebra", type: "Final Exam", date: "2026-08-12", time: "14:00", room: "Hall B", attendance: "Pending" },
-];
-
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [lang, setLang] = useState<"GE" | "EN">("GE"); // ენის მდგომარეობა
-  const [userName, setUserName] = useState("Giorgi");
+  const [lang, setLang] = useState<"GE" | "EN">("GE");
+  const [user, setUser] = useState<any>(null);
+  const [userName, setUserName] = useState("სტუდენტი");
 
-  // Helper Translation Function
+  
   const t = (ge: string, en: string) => (lang === "GE" ? ge : en);
 
-  // State
+  
   const [subjects, setSubjects] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [schedule, setSchedule] = useState<any[]>([]);
   const [exams, setExams] = useState<any[]>([]);
 
-  // Modals
+  
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isExamModalOpen, setIsExamModalOpen] = useState(false);
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false); // AI Modal
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
-  // AI State
+  
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  // Form States
+  
   const [newTask, setNewTask] = useState({ title: "", subject: "", date: "", time: "", status: "Pending", grade: "" });
   const [newSubject, setNewSubject] = useState({ code: "", title: "", teacher: "" });
   const [newScheduleItem, setNewScheduleItem] = useState({
@@ -118,81 +94,73 @@ export default function DashboardPage() {
     time: "10:00",
     room: "",
   });
+const router = useRouter();
 
-  // Load LocalStorage
+  
+  const getUserStorageKey = (keyName: string) => {
+    if (typeof window === "undefined") return null;
+    const savedUser = localStorage.getItem("user");
+    if (!savedUser) return null;
+    try {
+      const parsed = JSON.parse(savedUser);
+      const identifier = parsed.email || parsed.id || "guest";
+      return `studyflow_${identifier}_${keyName}`;
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
-    // 1. მომხმარებლის სახელის წაკითხვა
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
       try {
-        const user = JSON.parse(savedUser);
-        if (user.name) {
-          setUserName(user.name);
-        }
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+        if (parsedUser.name) setUserName(parsedUser.name);
       } catch (e) {
         console.error("User reading error:", e);
       }
     }
 
-    // 2. დავალებების წაკითხვა
-    const savedAssignments = localStorage.getItem("studyflow_assignments");
-    if (savedAssignments) {
-      setAssignments(JSON.parse(savedAssignments));
-    } else {
-      setAssignments(INITIAL_ASSIGNMENTS);
-      localStorage.setItem("studyflow_assignments", JSON.stringify(INITIAL_ASSIGNMENTS));
-    }
+    const assignKey = getUserStorageKey("assignments");
+    setAssignments(assignKey && localStorage.getItem(assignKey) ? JSON.parse(localStorage.getItem(assignKey)!) : []);
 
-    // 3. საგნების წაკითხვა
-    const savedSubjects = localStorage.getItem("studyflow_subjects");
-    if (savedSubjects) {
-      setSubjects(JSON.parse(savedSubjects));
-    } else {
-      setSubjects(INITIAL_SUBJECTS);
-      localStorage.setItem("studyflow_subjects", JSON.stringify(INITIAL_SUBJECTS));
-    }
+    const subjKey = getUserStorageKey("subjects");
+    setSubjects(subjKey && localStorage.getItem(subjKey) ? JSON.parse(localStorage.getItem(subjKey)!) : []);
 
-    // 4. ცხრილის წაკითხვა
-    const savedSchedule = localStorage.getItem("studyflow_schedule");
-    if (savedSchedule) {
-      setSchedule(JSON.parse(savedSchedule));
-    } else {
-      setSchedule(INITIAL_SCHEDULE);
-      localStorage.setItem("studyflow_schedule", JSON.stringify(INITIAL_SCHEDULE));
-    }
+    const schedKey = getUserStorageKey("schedule");
+    setSchedule(schedKey && localStorage.getItem(schedKey) ? JSON.parse(localStorage.getItem(schedKey)!) : []);
 
-    // 5. გამოცდების წაკითხვა
-    const savedExams = localStorage.getItem("studyflow_exams");
-    if (savedExams) {
-      setExams(JSON.parse(savedExams));
-    } else {
-      setExams(INITIAL_EXAMS);
-      localStorage.setItem("studyflow_exams", JSON.stringify(INITIAL_EXAMS));
-    }
+    const examKey = getUserStorageKey("exams");
+    setExams(examKey && localStorage.getItem(examKey) ? JSON.parse(localStorage.getItem(examKey)!) : []);
   }, []);
 
-  // LocalStorage Helpers
+  
   const updateAssignments = (newList: any[]) => {
     setAssignments(newList);
-    localStorage.setItem("studyflow_assignments", JSON.stringify(newList));
+    const key = getUserStorageKey("assignments");
+    if (key) localStorage.setItem(key, JSON.stringify(newList));
   };
 
   const updateSubjects = (newList: any[]) => {
     setSubjects(newList);
-    localStorage.setItem("studyflow_subjects", JSON.stringify(newList));
+    const key = getUserStorageKey("subjects");
+    if (key) localStorage.setItem(key, JSON.stringify(newList));
   };
 
   const updateSchedule = (newList: any[]) => {
     setSchedule(newList);
-    localStorage.setItem("studyflow_schedule", JSON.stringify(newList));
+    const key = getUserStorageKey("schedule");
+    if (key) localStorage.setItem(key, JSON.stringify(newList));
   };
 
   const updateExams = (newList: any[]) => {
     setExams(newList);
-    localStorage.setItem("studyflow_exams", JSON.stringify(newList));
+    const key = getUserStorageKey("exams");
+    if (key) localStorage.setItem(key, JSON.stringify(newList));
   };
 
-  // --- Handlers for Assignments & Grades ---
+  
   const handleStatusChange = (id: number, newStatus: string) => {
     const updated = assignments.map((item) => {
       if (item.id === id) {
@@ -243,7 +211,7 @@ export default function DashboardPage() {
     setIsTaskModalOpen(false);
   };
 
-  // --- Handlers for Schedule & Attendance ---
+  
   const handleAttendanceChange = (id: number, attendanceStatus: string) => {
     const updated = schedule.map((item) => {
       if (item.id === id) {
@@ -286,7 +254,7 @@ export default function DashboardPage() {
     updateSchedule(updated);
   };
 
-  // --- Handlers for Exams ---
+  
   const handleExamAttendanceChange = (id: number, attendanceStatus: string) => {
     const updated = exams.map((item) => {
       if (item.id === id) {
@@ -321,26 +289,35 @@ export default function DashboardPage() {
     updateExams(updated);
   };
 
-  // --- AI Assistant Handler ---
-  const handleAiAsk = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!aiPrompt.trim()) return;
+  
+ const handleAiAsk = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!aiPrompt.trim() || isAiLoading) return;
 
-    setIsAiLoading(true);
-    setAiResponse(null);
+  setIsAiLoading(true);
+  setAiResponse(null);
 
-    // AI სიმულაცია (რეალურ API-სთან მიერთების ადგილი)
-    setTimeout(() => {
-      setAiResponse(
-        lang === "GE"
-          ? `💡 **AI რჩევა დავალებისთვის "${aiPrompt}":**\n1. დაყავით პროექტი 3 ძირითად ეტაპად.\n2. დაუთმეთ 45 წუთი კონცენტრირებულ მუშაობას (Pomodoro ტექნიკა).\n3. გადაამოწმეთ კოდი/მასალა ბოლო 10 წუთის განმავლობაში.`
-          : `💡 **AI Guidance for "${aiPrompt}":**\n1. Break down the project into 3 main steps.\n2. Allocate 45 mins of deep focus (Pomodoro Technique).\n3. Review your submission in the final 10 mins.`
-      );
-      setIsAiLoading(false);
-    }, 1200);
-  };
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: aiPrompt }),
+    });
 
-  // Days remaining calculation helper
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "შეცდომა პასუხის მიღებისას");
+    }
+
+    setAiResponse(data.reply);
+  } catch (err: any) {
+    setAiResponse(err.message || "შეცდომა მოხდა. სცადეთ მოგვიანებით.");
+  } finally {
+    setIsAiLoading(false);
+  }
+};
+  
   const getDaysRemaining = (examDateStr: string) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -356,7 +333,7 @@ export default function DashboardPage() {
     return { label: t(`${diffDays} დღეში`, `In ${diffDays} days`), color: "bg-indigo-100 text-indigo-700" };
   };
 
-  // --- Handlers for Subjects ---
+  
   const handleAddSubject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSubject.title || !newSubject.code) return;
@@ -372,9 +349,15 @@ export default function DashboardPage() {
     updateSubjects([...subjects, subj]);
     setNewSubject({ code: "", title: "", teacher: "" });
     setIsSubjectModalOpen(false);
+  }; 
+
+  
+  const deleteSubject = (id: number) => {
+    const updated = subjects.filter((s) => s.id !== id);
+    updateSubjects(updated);
   };
 
-  // --- Dynamic Stats ---
+  
   const completedTasks = assignments.filter((item) => item.status === "Completed");
   const inProgressTasks = assignments.filter((item) => item.status === "In Progress");
   const pendingTasks = assignments.filter((item) => item.status === "Pending");
@@ -408,7 +391,7 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-screen bg-slate-50/60 text-slate-800 font-sans">
       {/* SIDEBAR */}
-      <aside className="fixed left-0 top-0 z-20 flex h-full w-64 flex-col border-r border-slate-200/80 bg-white p-5 shadow-sm">
+      <aside className="hidden md:flex fixed left-0 top-0 z-20 h-screen w-64 flex-col justify-between border-r border-slate-200/80 bg-white p-5 shadow-sm overflow-y-auto">
         <div className="flex items-center gap-3 px-2 pb-6 border-b border-slate-100">
           <Logo size="sm" />
           <div>
@@ -489,23 +472,31 @@ export default function DashboardPage() {
         </nav>
 
         <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm">
-              GI
-            </div>
-            <div>
-              <p className="text-xs font-bold text-slate-800">Giorgi Inasaridze</p>
-              <p className="text-[10px] text-slate-400">Computer Science</p>
-            </div>
-          </div>
-          <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-rose-500 transition-colors">
-            <LogOut size={18} />
-          </button>
-        </div>
+  <Link href="/dashboard/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm">
+      {userName ? userName[0].toUpperCase() : "U"}
+    </div>
+    <div>
+      <p className="text-xs font-bold text-slate-800">{userName || "User"}</p>
+      <p className="text-[10px] text-slate-400">{user?.email || "Student Portal"}</p>
+    </div>
+  </Link>
+  <button 
+    onClick={() => {
+      if (confirm(t("ნამდვილად გსურთ გამოსვლა?", "Are you sure you want to log out?"))) {
+        localStorage.removeItem("user");
+        router.push("/login");
+      }
+    }} 
+    className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-rose-500 transition-colors"
+  >
+    <LogOut size={18} />
+  </button>
+</div>
       </aside>
 
       {/* MAIN CONTENT AREA */}
-<main className="ml-64 flex-1 p-8">
+<main className="ml-0 md:ml-64 min-h-screen flex-1 p-4 md:p-8 overflow-y-auto">
   {/* HEADER */}
   <header className="flex items-center justify-between pb-8">
     <div>
@@ -566,7 +557,7 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* ----------------- TAB 1: DASHBOARD ----------------- */}
+  {/* ----------------- TAB 1: DASHBOARD ----------------- */}
         {activeTab === "dashboard" && (
           <div className="flex flex-col gap-8">
             <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -626,24 +617,24 @@ export default function DashboardPage() {
 
                 <div className="mt-4 flex flex-col gap-3">
                   {assignments.slice(0, 4).map((item) => (
-                    <div key={item.id} className="flex items-center justify-between rounded-2xl border border-slate-100 p-4 hover:border-slate-200 transition-all">
-                      <div className="flex items-center gap-3.5">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-bold text-xs">
+                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-100 p-4 hover:border-slate-200 transition-all">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-bold text-xs">
                           {item.code || "CS"}
                         </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-slate-800">{item.title}</h4>
-                          <p className="text-[11px] text-slate-400 mt-0.5">
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-bold text-slate-800 break-words">{item.title}</h4>
+                          <p className="text-[11px] text-slate-400 mt-0.5 break-words">
                             {item.subject} • {item.date} ({item.time})
                           </p>
                         </div>
                       </div>
-                      <div className="text-right flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg">
+                      <div className="flex flex-wrap items-center justify-end gap-2 mt-2 sm:mt-0">
+                        <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg whitespace-nowrap">
                           {item.grade || t("ნიშანი არაა", "No Grade")}
                         </span>
                         <span
-                          className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                          className={`rounded-full px-2.5 py-1 text-[10px] font-bold whitespace-nowrap ${
                             item.status === "Completed"
                               ? "bg-emerald-100 text-emerald-700"
                               : item.status === "In Progress"
@@ -651,7 +642,11 @@ export default function DashboardPage() {
                               : "bg-amber-100 text-amber-700"
                           }`}
                         >
-                          {item.status === "Completed" ? t("შესრულებული", "Completed") : item.status === "In Progress" ? t("მიმდინარე", "In Progress") : t("მოლოდინში", "Pending")}
+                          {item.status === "Completed"
+                            ? t("შესრულებული", "Completed")
+                            : item.status === "In Progress"
+                            ? t("მიმდინარე", "In Progress")
+                            : t("მოლოდინში", "Pending")}
                         </span>
                       </div>
                     </div>
@@ -703,7 +698,7 @@ export default function DashboardPage() {
         )}
 
         {/* ----------------- TAB 2: SUBJECTS ----------------- */}
-        {activeTab === "subjects" && (
+{activeTab === "subjects" && (
   <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
     <div className="flex items-center justify-between pb-4 border-b border-slate-100">
       <div>
@@ -725,6 +720,13 @@ export default function DashboardPage() {
             <span className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-600">
               {subj.code}
             </span>
+            <button
+              onClick={() => deleteSubject(subj.id)}
+              className="text-slate-300 hover:text-rose-500 p-1 transition-colors"
+              title="Delete Subject"
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
           <h4 className="mt-4 text-sm font-bold text-slate-800">{subj.title}</h4>
           <p className="text-[11px] text-slate-400 mt-1">{subj.teacher}</p>
@@ -733,7 +735,6 @@ export default function DashboardPage() {
     </div>
   </div>
 )}
-      
 
      {/* ----------------- TAB 3: ASSIGNMENTS & GRADES ----------------- */}
 {activeTab === "assignments_grades" && (
@@ -971,50 +972,52 @@ export default function DashboardPage() {
         )}
       </main>
 
-      {/* ----------------- AI ASSISTANT MODAL ----------------- */}
-      {isAIModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-                  <Bot size={20} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-800">{t("AI სწავლის ასისტენტი", "AI Study Assistant")}</h3>
-                  <p className="text-[11px] text-slate-400">{t("მიიღეთ რჩევები და დაშალეთ დავალებები", "Get recommendations and task breakdowns")}</p>
-                </div>
-              </div>
-              <button onClick={() => setIsAIModalOpen(false)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100">
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleAiAsk} className="mt-4 flex flex-col gap-3">
-              <textarea
-                rows={3}
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                placeholder={t("მაგ: როგორ მოვემზადო მონაცემთა სტრუქტურების გამოცდისთვის?", "e.g. How should I break down my Data Structures project?")}
-                className="w-full rounded-xl border border-slate-200 p-3 text-xs outline-none focus:border-indigo-500"
-              />
-              <button
-                type="submit"
-                disabled={isAiLoading}
-                className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-indigo-700 transition-all disabled:opacity-50"
-              >
-                {isAiLoading ? t("ფიქრობს...", "Thinking...") : <><Send size={14} /> {t("კითხვა AI-ს", "Ask AI")}</>}
-              </button>
-            </form>
-
-            {aiResponse && (
-              <div className="mt-4 rounded-2xl bg-slate-50 p-4 border border-slate-100 text-xs text-slate-700 whitespace-pre-line leading-relaxed">
-                {aiResponse}
-              </div>
-            )}
+     {/* ----------------- AI ASSISTANT MODAL ----------------- */}
+{isAIModalOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+    {/* დაემატა max-h-[85vh] flex flex-col */}
+    <div className="w-full max-w-lg max-h-[85vh] flex flex-col rounded-3xl bg-white p-6 shadow-2xl border border-slate-100">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+            <Bot size={20} />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-800">{t("AI სწავლის ასისტენტი", "AI Study Assistant")}</h3>
+            <p className="text-[11px] text-slate-400">{t("მიიღეთ რჩევები და დაშალეთ დავალებები", "Get recommendations and task breakdowns")}</p>
           </div>
         </div>
+        <button onClick={() => setIsAIModalOpen(false)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-100">
+          <X size={18} />
+        </button>
+      </div>
+
+      <form onSubmit={handleAiAsk} className="mt-4 flex flex-col gap-3 shrink-0">
+        <textarea
+          rows={3}
+          value={aiPrompt}
+          onChange={(e) => setAiPrompt(e.target.value)}
+          placeholder={t("მაგ: როგორ მოვემზადო მონაცემთა სტრუქტურების გამოცდისთვის?", "e.g. How should I break down my Data Structures project?")}
+          className="w-full rounded-xl border border-slate-200 p-3 text-xs outline-none focus:border-indigo-500"
+        />
+        <button
+          type="submit"
+          disabled={isAiLoading}
+          className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-indigo-700 transition-all disabled:opacity-50"
+        >
+          {isAiLoading ? t("ფიქრობს...", "Thinking...") : <><Send size={14} /> {t("კითხვა AI-ს", "Ask AI")}</>}
+        </button>
+      </form>
+
+      {/* დაემატა overflow-y-auto max-h-[350px] */}
+      {aiResponse && (
+        <div className="mt-4 overflow-y-auto max-h-[350px] rounded-2xl bg-slate-50 p-4 border border-slate-100 text-xs text-slate-700 whitespace-pre-line leading-relaxed">
+          {aiResponse}
+        </div>
       )}
+    </div>
+  </div>
+)}
 
       {/* ----------------- MODAL: ADD TASK ----------------- */}
       {isTaskModalOpen && (

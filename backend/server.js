@@ -5,14 +5,14 @@ const path = require('path');
 
 const app = express();
 
-// Middleware
+
 app.use(cors());
 app.use(express.json());
 
-// JSON ფაილის გზა
+
 const USERS_FILE = path.join(__dirname, 'users.json');
 
-// Helper: მომხმარებლების წაკითხვა ფაილიდან
+
 const getUsersFromFile = () => {
   if (!fs.existsSync(USERS_FILE)) {
     fs.writeFileSync(USERS_FILE, JSON.stringify([]));
@@ -26,14 +26,11 @@ const getUsersFromFile = () => {
   }
 };
 
-// Helper: მომხმარებლების ჩაწერა ფაილში
+
 const saveUsersToFile = (users) => {
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 };
 
-// ==========================================
-// 1. IN-MEMORY DATA (ASSIGNMENTS, SCHEDULE, ETC.)
-// ==========================================
 
 let subjects = [
   { id: 1, code: "CS-201", title: "Data Structures", teacher: "Prof. Giorgi Beridze", progress: 65 },
@@ -58,11 +55,9 @@ let exams = [
   { id: 2, subject: "Linear Algebra", type: "Final Exam", date: "2026-08-12", time: "14:00", room: "Hall B", attendance: "Pending" }
 ];
 
-// ==========================================
-// 2. AUTH ENDPOINTS (REGISTER & LOGIN)
-// ==========================================
 
-// რეგისტრაცია
+
+
 app.post('/api/auth/register', (req, res) => {
   const { email, password, name } = req.body;
 
@@ -72,7 +67,7 @@ app.post('/api/auth/register', (req, res) => {
 
   const users = getUsersFromFile();
 
-  // შემოწმება, ხომ არ არსებობს უკვე ეს იუზერი
+  
   const existingUser = users.find(u => u.email === email);
   if (existingUser) {
     return res.status(400).json({ error: "User already exists" });
@@ -85,7 +80,7 @@ app.post('/api/auth/register', (req, res) => {
   res.status(201).json({ message: "Registration successful", user: { id: newUser.id, name: newUser.name, email: newUser.email } });
 });
 
-// ავტორიზაცია (Login)
+
 app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -103,14 +98,11 @@ app.post('/api/auth/login', (req, res) => {
   res.json({ message: "Login successful", user: { id: user.id, name: user.name, email: user.email } });
 });
 
-// ==========================================
-// 3. OTHER API ENDPOINTS
-// ==========================================
 
-// --- SUBJECTS ---
+
 app.get('/api/subjects', (req, res) => res.json(subjects));
 
-// --- ASSIGNMENTS ---
+
 app.get('/api/assignments', (req, res) => res.json(assignments));
 
 app.post('/api/assignments', (req, res) => {
@@ -135,7 +127,7 @@ app.delete('/api/assignments/:id', (req, res) => {
   res.json({ message: "Assignment deleted successfully" });
 });
 
-// --- SCHEDULE ---
+
 app.get('/api/schedule', (req, res) => res.json(schedule));
 
 app.post('/api/schedule', (req, res) => {
@@ -159,7 +151,7 @@ app.delete('/api/schedule/:id', (req, res) => {
   res.json({ message: "Schedule item deleted successfully" });
 });
 
-// --- EXAMS ---
+
 app.get('/api/exams', (req, res) => res.json(exams));
 
 app.post('/api/exams', (req, res) => {
@@ -174,7 +166,7 @@ app.delete('/api/exams/:id', (req, res) => {
   res.json({ message: "Exam deleted successfully" });
 });
 
-// --- AI ASSISTANT ---
+
 app.post('/api/ai/ask', (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: "Prompt is required" });
@@ -183,9 +175,7 @@ app.post('/api/ai/ask', (req, res) => {
   res.json({ response: aiResponse });
 });
 
-// ==========================================
-// 4. SERVER START
-// ==========================================
+
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Backend server is running on http://localhost:5000`);
