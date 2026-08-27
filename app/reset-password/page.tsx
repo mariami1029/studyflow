@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 function ResetForm() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  const token = searchParams.get("token");
-  const email = searchParams.get("email");
+  const supabase = createClientComponentClient();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -27,24 +25,17 @@ function ResetForm() {
     setStatus(null);
 
     try {
-      const res = await fetch("/api/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, email, newPassword: password }),
+      // 🚀 Supabase Native Password Update API-ს გარეშე
+      const { error } = await supabase.auth.updateUser({
+        password: password,
       });
 
-      
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error(`სერვერმა დააბრუნა არასწორი პასუხი (Status: ${res.status}). შეამოწმეთ API-ს მისამართი.`);
+      if (error) {
+        throw new Error(error.message || "შეცდომა პაროლის განახლებისას");
       }
 
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.message || data.error || "შეცდომა პაროლის განახლებისას");
-
       setStatus({ type: "success", msg: "პაროლი წარმატებით შეიცვალა! გადადიხართ შესვლის გვერდზე..." });
-      setTimeout(() => router.push("/login"), 3000);
+      setTimeout(() => router.push("/login"), 2000);
     } catch (err: any) {
       setStatus({ type: "error", msg: err.message });
     } finally {
