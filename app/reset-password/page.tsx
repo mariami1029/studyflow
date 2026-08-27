@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 function ResetForm() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  const token = searchParams.get("token");
-  const email = searchParams.get("email");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -27,22 +29,17 @@ function ResetForm() {
     setStatus(null);
 
     try {
-      const res = await fetch("/api/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, email, newPassword: password }),
+      // 🚀 Supabase Auth-ის ოფიციალური პაროლის განახლება
+      const { error } = await supabase.auth.updateUser({
+        password: password,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "შეცდომა პაროლის განახლებისას");
-      }
+      if (error) throw error;
 
       setStatus({ type: "success", msg: "პაროლი წარმატებით შეიცვალა! გადადიხართ შესვლის გვერდზე..." });
       setTimeout(() => router.push("/login"), 2000);
     } catch (err: any) {
-      setStatus({ type: "error", msg: err.message });
+      setStatus({ type: "error", msg: err.message || "შეცდომა პაროლის განახლებისას" });
     } finally {
       setLoading(false);
     }
