@@ -51,6 +51,7 @@ const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "S
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const [lang, setLang] = useState<"GE" | "EN">("GE");
   const [user, setUser] = useState<any>(null);
   const [userName, setUserName] = useState("სტუდენტი");
@@ -389,111 +390,147 @@ const router = useRouter();
   const todayClasses = schedule.filter((s) => s.day === currentDayName);
 
   return (
-    <div className="flex min-h-screen bg-slate-50/60 text-slate-800 font-sans">
-      {/* SIDEBAR */}
-      <aside className="hidden md:flex fixed left-0 top-0 z-20 h-screen w-64 flex-col justify-between border-r border-slate-200/80 bg-white p-5 shadow-sm overflow-y-auto">
-        <div className="flex items-center gap-3 px-2 pb-6 border-b border-slate-100">
+  <div className="flex min-h-screen bg-slate-50/60 text-slate-800 font-sans flex-col md:flex-row">
+    
+    {/* 📱 1. მობილურის ზედა ზოლი (ჩნდება მხოლოდ ტელეფონზე) */}
+    <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200/80 sticky top-0 z-30 shadow-sm">
+      <div className="flex items-center gap-2.5">
+        <Logo size="sm" />
+        <span className="font-black text-slate-800 text-base">StudyFlow</span>
+      </div>
+      <button
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        className="p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all"
+      >
+        {isSidebarOpen ? <X size={22} /> : <BookOpen size={22} />}
+      </button>
+    </div>
+
+    {/* 🌫 2. მობილურზე მენიუს გახსნისას ფონის გამუქება */}
+    {isSidebarOpen && (
+      <div
+        onClick={() => setIsSidebarOpen(false)}
+        className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm md:hidden transition-opacity"
+      />
+    )}
+
+    {/* 📐 3. SIDEBAR (მობილურზე გამოდის მარცხნიდან, დესკტოპზე ფიქსირებულია) */}
+    <aside
+      className={`fixed top-0 left-0 z-50 h-screen w-64 flex-col justify-between border-r border-slate-200/80 bg-white p-5 shadow-sm overflow-y-auto transition-transform duration-300 ease-in-out ${
+        isSidebarOpen ? "translate-x-0 flex" : "-translate-x-full md:translate-x-0 md:flex"
+      }`}
+    >
+      <div className="flex items-center justify-between px-2 pb-6 border-b border-slate-100">
+        <div className="flex items-center gap-3">
           <Logo size="sm" />
           <div>
             <h2 className="text-lg font-black text-slate-800 leading-none">StudyFlow</h2>
             <p className="text-[11px] text-slate-400 mt-0.5 font-medium">{t("სტუდენტის პორტალი", "Student Portal")}</p>
           </div>
         </div>
+        {/* მობილურის დახურვის X ღილაკი */}
+        <button
+          onClick={() => setIsSidebarOpen(false)}
+          className="md:hidden p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"
+        >
+          <X size={20} />
+        </button>
+      </div>
 
-        <nav className="mt-6 flex flex-col gap-1.5 flex-1">
-          <button
-            onClick={() => setActiveTab("dashboard")}
-            className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all w-full text-left ${
-              activeTab === "dashboard"
-                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
-            }`}
-          >
-            <LayoutDashboard size={18} />
-            {t("მართვის პანელი", "Dashboard")}
-          </button>
+      <nav className="mt-6 flex flex-col gap-1.5 flex-1">
+        <button
+          onClick={() => { setActiveTab("dashboard"); setIsSidebarOpen(false); }}
+          className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all w-full text-left ${
+            activeTab === "dashboard"
+              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+              : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+          }`}
+        >
+          <LayoutDashboard size={18} />
+          {t("მართვის პანელი", "Dashboard")}
+        </button>
 
-          <button
-            onClick={() => setActiveTab("subjects")}
-            className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all w-full text-left ${
-              activeTab === "subjects"
-                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
-            }`}
-          >
-            <BookOpen size={18} />
-            {t("საგნები", "Subjects")}
-          </button>
+        <button
+          onClick={() => { setActiveTab("subjects"); setIsSidebarOpen(false); }}
+          className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all w-full text-left ${
+            activeTab === "subjects"
+              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+              : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+          }`}
+        >
+          <BookOpen size={18} />
+          {t("საგნები", "Subjects")}
+        </button>
 
-          <button
-            onClick={() => setActiveTab("assignments_grades")}
-            className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all w-full text-left ${
-              activeTab === "assignments_grades"
-                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
-            }`}
-          >
-            <Award size={18} />
-            {t("დავალებები & ნიშნები", "Assignments & Grades")}
-          </button>
+        <button
+          onClick={() => { setActiveTab("assignments_grades"); setIsSidebarOpen(false); }}
+          className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all w-full text-left ${
+            activeTab === "assignments_grades"
+              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+              : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+          }`}
+        >
+          <Award size={18} />
+          {t("დავალებები & ნიშნები", "Assignments & Grades")}
+        </button>
 
-          <button
-            onClick={() => setActiveTab("schedule")}
-            className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all w-full text-left ${
-              activeTab === "schedule"
-                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
-            }`}
-          >
-            <CalendarIcon size={18} />
-            {t("ცხრილი", "Schedule")}
-          </button>
+        <button
+          onClick={() => { setActiveTab("schedule"); setIsSidebarOpen(false); }}
+          className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all w-full text-left ${
+            activeTab === "schedule"
+              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+              : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+          }`}
+        >
+          <CalendarIcon size={18} />
+          {t("ცხრილი", "Schedule")}
+        </button>
 
-          <button
-            onClick={() => setActiveTab("exams")}
-            className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all w-full text-left ${
-              activeTab === "exams"
-                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
-            }`}
-          >
-            <FileCheck size={18} />
-            {t("გამოცდები", "Exams")}
-          </button>
+        <button
+          onClick={() => { setActiveTab("exams"); setIsSidebarOpen(false); }}
+          className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all w-full text-left ${
+            activeTab === "exams"
+              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+              : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+          }`}
+        >
+          <FileCheck size={18} />
+          {t("გამოცდები", "Exams")}
+        </button>
 
-          {/* AI ASSISTANT BUTTON */}
-          <button
-            onClick={() => setIsAIModalOpen(true)}
-            className="mt-4 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all w-full text-left bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md hover:opacity-95"
-          >
-            <Sparkles size={18} className="animate-spin-slow" />
-            {t("AI ასისტენტი", "AI Assistant")}
-          </button>
-        </nav>
+        {/* AI ASSISTANT BUTTON */}
+        <button
+          onClick={() => { setIsAIModalOpen(true); setIsSidebarOpen(false); }}
+          className="mt-4 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all w-full text-left bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md hover:opacity-95"
+        >
+          <Sparkles size={18} className="animate-spin-slow" />
+          {t("AI ასისტენტი", "AI Assistant")}
+        </button>
+      </nav>
 
-        <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
-  <Link href="/dashboard/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm">
-      {userName ? userName[0].toUpperCase() : "U"}
-    </div>
-    <div>
-      <p className="text-xs font-bold text-slate-800">{userName || "User"}</p>
-      <p className="text-[10px] text-slate-400">{user?.email || "Student Portal"}</p>
-    </div>
-  </Link>
-  <button 
-    onClick={() => {
-      if (confirm(t("ნამდვილად გსურთ გამოსვლა?", "Are you sure you want to log out?"))) {
-        localStorage.removeItem("user");
-        router.push("/login");
-      }
-    }} 
-    className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-rose-500 transition-colors"
-  >
-    <LogOut size={18} />
-  </button>
-</div>
-      </aside>
+      <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
+        <Link href="/dashboard/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm">
+            {userName ? userName[0].toUpperCase() : "U"}
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-800">{userName || "User"}</p>
+            <p className="text-[10px] text-slate-400">{user?.email || "Student Portal"}</p>
+          </div>
+        </Link>
+        <button
+          onClick={() => {
+            if (confirm(t("ნამდვილად გსურთ გამოსვლა?", "Are you sure you want to log out?"))) {
+              localStorage.removeItem("user");
+              router.push("/login");
+            }
+          }}
+          className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-rose-500 transition-colors"
+        >
+          <LogOut size={18} />
+        </button>
+      </div>
+    </aside>
 
       {/* MAIN CONTENT AREA */}
 <main className="ml-0 md:ml-64 min-h-screen flex-1 p-4 md:p-8 overflow-y-auto">
