@@ -1,16 +1,13 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { useSearchParams, useRouter } from "next/navigation";
 
 function ResetForm() {
+  const searchParams = useSearchParams();
   const router = useRouter();
+
+  const email = searchParams.get("email");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -19,6 +16,11 @@ function ResetForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email) {
+      setStatus({ type: "error", msg: "ელ-ფოსტის მისამართი არასწორია ან აკლია ბმულს." });
+      return;
+    }
 
     if (password !== confirmPassword) {
       setStatus({ type: "error", msg: "პაროლები ერთმანეთს არ ემთხვევა" });
@@ -29,17 +31,23 @@ function ResetForm() {
     setStatus(null);
 
     try {
-      // 🚀 Supabase Auth-ის ოფიციალური პაროლის განახლება
-      const { error } = await supabase.auth.updateUser({
-        password: password,
+      // 🚀 მოთხოვნა იგზავნება Backend API-ზე (სესია აღარ არის საჭირო)
+      const res = await fetch("/api/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, newPassword: password }),
       });
 
-      if (error) throw error;
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "შეცდომა პაროლის განახლებისას");
+      }
 
       setStatus({ type: "success", msg: "პაროლი წარმატებით შეიცვალა! გადადიხართ შესვლის გვერდზე..." });
       setTimeout(() => router.push("/login"), 2000);
     } catch (err: any) {
-      setStatus({ type: "error", msg: err.message || "შეცდომა პაროლის განახლებისას" });
+      setStatus({ type: "error", msg: err.message });
     } finally {
       setLoading(false);
     }
