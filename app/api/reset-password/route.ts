@@ -17,27 +17,35 @@ export async function POST(req: Request) {
 
     if (!supabaseUrl || !serviceRoleKey) {
       return NextResponse.json(
-        { error: "Server Configuration Error: SUPABASE_SERVICE_ROLE_KEY missing" },
+        { error: "SUPABASE_SERVICE_ROLE_KEY არ არის კონფიგურირებული Vercel-ში" },
         { status: 500 }
       );
     }
 
-    // შექმენი Admin Client Service Role Key-ით
+    // შექმენი Admin Client სწორი ავტორიზაციის ჰედერებით
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
+      global: {
+        headers: {
+          Authorization: `Bearer ${serviceRoleKey}`,
+        },
+      },
     });
 
-    // 1. იპოვე მომხმარებლის ID ზუსტი მეილით (Pagination-ის გარეშე)
-    const { data: usersData, error: getUserError } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    // 1. იპოვე მომხმარებელი მეილით
+    const { data: usersData, error: getUserError } = await supabaseAdmin.auth.admin.listUsers();
     
     if (getUserError) {
-      return NextResponse.json({ error: getUserError.message }, { status: 400 });
+      console.error("Supabase Admin Auth Error:", getUserError);
+      return NextResponse.json({ error: getUserError.message }, { status: 401 });
     }
 
-    const user = usersData.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+    const user = usersData.users.find(
+      (u) => u.email?.toLowerCase() === email.toLowerCase()
+    );
 
     if (!user) {
       return NextResponse.json(
@@ -46,7 +54,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. განაახლე პაროლი უშუალოდ მომხმარებლის ID-ზე
+    // 2. განაახლე პაროლი
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       user.id,
       { password: newPassword }
