@@ -1,41 +1,19 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function ResetForm() {
+  const searchParams = useSearchParams();
   const router = useRouter();
+
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [sessionReady, setSessionReady] = useState(false);
-
-  useEffect(() => {
-    // 🚀 გადავიჭერთ სესიას URL-ში არსებული ტოკენიდან
-    const handleAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        setSessionReady(true);
-      } else {
-        // ველოდებით Supabase-ის ავტომატურ Auth Hash-ის დამუშავებას
-        supabase.auth.onAuthStateChange((event, session) => {
-          if (event === "PASSWORD_RECOVERY" || session) {
-            setSessionReady(true);
-          }
-        });
-      }
-    };
-
-    handleAuth();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,13 +27,16 @@ function ResetForm() {
     setStatus(null);
 
     try {
-      // 🚀 განვაახლებთ პაროლს აქტიური სესიისთვის
-      const { error } = await supabase.auth.updateUser({
-        password: password,
+      const res = await fetch("/api/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, email, newPassword: password }),
       });
 
-      if (error) {
-        throw new Error(error.message || "შეცდომა პაროლის განახლებისას");
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "შეცდომა პაროლის განახლებისას");
       }
 
       setStatus({ type: "success", msg: "პაროლი წარმატებით შეიცვალა! გადადიხართ შესვლის გვერდზე..." });
@@ -105,10 +86,10 @@ function ResetForm() {
 
         <button
           type="submit"
-          disabled={loading || !sessionReady}
+          disabled={loading}
           className="mt-2 w-full rounded-xl bg-emerald-500 py-3 font-bold text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600 active:scale-[0.99] disabled:opacity-50"
         >
-          {loading ? "ახლდება..." : !sessionReady ? "მოწმდება სესია..." : "პაროლის განახლება"}
+          {loading ? "ახლდება..." : "პაროლის განახლება"}
         </button>
       </form>
     </div>
