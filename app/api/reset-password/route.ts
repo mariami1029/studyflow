@@ -13,39 +13,48 @@ export async function POST(req: Request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl || !serviceRoleKey) {
       return NextResponse.json(
-        { error: "Supabase-ის მონაცემები ვერ მოიძებნა" },
+        { error: "Server Configuration Error: SUPABASE_SERVICE_ROLE_KEY missing" },
         { status: 500 }
       );
     }
 
-    const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
+    // შექმენი Admin Client Service Role Key-ით
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
 
-    // მომხმარებლის მოძებნა და პაროლის განახლება
-    const { data: users, error: getUserError } = await supabaseAdmin.auth.admin.listUsers();
+    // 1. იპოვე მომხმარებლის ID ზუსტი მეილით (Pagination-ის გარეშე)
+    const { data: usersData, error: getUserError } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
     
     if (getUserError) {
       return NextResponse.json({ error: getUserError.message }, { status: 400 });
     }
 
-    const user = users?.users.find((u) => u.email === email);
+    const user = usersData.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
 
     if (!user) {
       return NextResponse.json(
-        { error: "მომხმარებელი ვერ მოიძებნა" },
+        { error: "ამ მეილით მომხმარებელი ვერ მოიძებნა" },
         { status: 404 }
       );
     }
 
+    // 2. განაახლე პაროლი უშუალოდ მომხმარებლის ID-ზე
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       user.id,
       { password: newPassword }
     );
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 400 });
+    }
 
     return NextResponse.json({
       success: true,
