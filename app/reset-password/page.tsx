@@ -2,11 +2,16 @@
 
 import { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
+
+// იყენებს პროექტის არსებულ ცვლადებს დამატებითი პაკეტების გარეშე
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 function ResetForm() {
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,7 +30,6 @@ function ResetForm() {
     setStatus(null);
 
     try {
-      // 🚀 Supabase Native Password Update API-ს გარეშე
       const { error } = await supabase.auth.updateUser({
         password: password,
       });
