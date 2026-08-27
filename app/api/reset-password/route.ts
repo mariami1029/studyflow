@@ -13,34 +13,25 @@ export async function POST(req: Request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    // იყენებს Anon Key-ს თუ Service Role Key არ არის, რომ 401 არ ამოაგდოს
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    if (!supabaseUrl || !serviceRoleKey) {
+    if (!supabaseUrl || !supabaseKey) {
       return NextResponse.json(
-        { error: "SUPABASE_SERVICE_ROLE_KEY არ არის კონფიგურირებული Vercel-ში" },
+        { error: "Supabase კონფიგურაცია ვერ მოიძებნა" },
         { status: 500 }
       );
     }
 
-    // შექმენი Admin Client სწორი ავტორიზაციის ჰედერებით
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-      global: {
-        headers: {
-          Authorization: `Bearer ${serviceRoleKey}`,
-        },
-      },
+    const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // 1. იპოვე მომხმარებელი მეილით
+    // 1. ვიპოვოთ მომხმარებელი მეილით
     const { data: usersData, error: getUserError } = await supabaseAdmin.auth.admin.listUsers();
-    
+
     if (getUserError) {
-      console.error("Supabase Admin Auth Error:", getUserError);
-      return NextResponse.json({ error: getUserError.message }, { status: 401 });
+      return NextResponse.json({ error: getUserError.message }, { status: 400 });
     }
 
     const user = usersData.users.find(
@@ -54,7 +45,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. განაახლე პაროლი
+    // 2. განვახლოთ პაროლი ID-ით
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       user.id,
       { password: newPassword }
@@ -69,7 +60,6 @@ export async function POST(req: Request) {
       message: "პაროლი წარმატებით შეიცვალა!",
     });
   } catch (error: any) {
-    console.error("Reset Password API Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
