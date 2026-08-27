@@ -10,13 +10,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    
     const resetToken = crypto.randomBytes(32).toString("hex");
 
-    
-    const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    // ✅ დინამიური URL: იყენებს Vercel-ის დომენს ან დეფოლტად studyflow.ge-ს
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://studyflow.ge";
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
-    
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -25,7 +24,6 @@ export async function POST(req: Request) {
       },
     });
 
-    
     const htmlTemplate = `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #ffffff;">
         <h2 style="color: #10b981; text-align: center;">StudyFlow 🚀</h2>
@@ -38,7 +36,6 @@ export async function POST(req: Request) {
       </div>
     `;
 
-    
     await transporter.sendMail({
       from: `"StudyFlow" <${process.env.GMAIL_USER}>`,
       to: email,
