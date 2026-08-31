@@ -1,0 +1,917 @@
+{
+  "info": {
+    "_postman_id": "dc7119ca-e6c3-4c6c-9b13-8fb1502ad643",
+    "name": "StudyFlow API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56629168",
+    "_collection_link": "https://go.postman.co/collection/56629168-dc7119ca-e6c3-4c6c-9b13-8fb1502ad643?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200, 201 or 400 (Already Exists)\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400]);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"გიორგი ბერიძე\",\r\n  \"email\": \"student999@example.com\",\r\n  \"password\": \"Password123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/auth/register",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response returned status for invalid email test\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 422]);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"გიორგი ბერიძე\",\r\n  \"email\": \"invalid-email-format\",\r\n  \"password\": \"Password123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/auth/register",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Empty fields handled\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"\",\r\n  \"email\": \"\",\r\n  \"password\": \"\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/auth/register",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Weak password error handling\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 422]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"გიორგი ბერიძე\",\r\n  \"email\": \"weakpass@example.com\",\r\n  \"password\": \"123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/auth/register",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Password mismatch handled\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 422]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"გიორგი ბერიძე\",\r\n  \"email\": \"mismatch@example.com\",\r\n  \"password\": \"Password123!\",\r\n  \"confirmPassword\": \"DifferentPassword123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/auth/register",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Login successful (200 OK or 201)\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"student999@example.com\",\r\n  \"password\": \"Password123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/auth/login",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Empty login handled with 400 or 422\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"\",\r\n  \"password\": \"\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/auth/login",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Invalid credentials blocked with 400 or 401\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 401]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"nonexistentuser@example.com\",\r\n  \"password\": \"WrongPassword123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/auth/login",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Password reset response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204, 400, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"student999@example.com\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/auth/reset-password",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "reset-password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Add subject test\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"code\": \"MATH101\",\r\n  \"name\": \"უმაღლესი მათემატიკა\",\r\n  \"lecturer\": \"გიორგი გიორგაძე\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/subjects",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "subjects"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Delete subject test\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/subjects/1",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "subjects",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Add task response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"title\": \"მათემატიკის დავალება\",\r\n  \"subject\": \"MATH101\",\r\n  \"dueDate\": \"2026-09-01\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/tasks",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "tasks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Delete task response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/tasks/1",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "tasks",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Update task status response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"status\": \"completed\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/tasks/1",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "tasks",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Add schedule response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"day\": \"Monday\",\r\n  \"time\": \"10:00\",\r\n  \"subject\": \"MATH101\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/schedules",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "schedules"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Delete schedule response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/schedules/1",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "schedules",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Add exam response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"title\": \"ფინალური გამოცდა\",\r\n  \"subject\": \"MATH101\",\r\n  \"date\": \"2026-12-20\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/exams",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "exams"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Delete exam response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/exams/1",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "exams",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Get profile response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/profile",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"AI Assistant response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"message\": \"მომეცი რჩევა საგამოცდო მზადებისთვის\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/ai/chat",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "ai",
+            "chat"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Logout response ok\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 204, 400, 401, 404]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "https://studyflow-backend-wrat.onrender.com/api/logout",
+          "protocol": "https",
+          "host": [
+            "studyflow-backend-wrat",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "logout"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

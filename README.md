@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+#  StudyFlow - Web Application & QA Automation Portfolio
 
-## Getting Started
+![Cypress E2E Tests](https://github.com/mariami1029/studyflow/actions/workflows/cypress.yml/badge.svg)
 
-First, run the development server:
+> **Live Application:** [https://studyflow.ge](https://studyflow.ge)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+StudyFlow is a modern educational management platform built from scratch. This repository showcases a full Software Testing Life Cycle (STLC), including Manual Testing, API Validation, Database Verification, Cypress E2E Automation, and CI/CD Integration via GitHub Actions.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+##  Tech Stack & Tools
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+* **Application:** Next.js, React, Node.js, Tailwind CSS
+* **Test Automation:** Cypress v13+
+* **CI/CD:** GitHub Actions
+* **API Testing:** Postman / API Collections
+* **Database Testing:** PostgreSQL / Database Verification
+* **Documentation Standard:** IEEE 829
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+##  QA Testing Overview & Metrics
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+* **Requirements Analysis & UX:** Full product specification & UX sanity checks.
+* **Manual Test Cases:** 33 Executed (100% Pass Rate).
+* **API Endpoints Tested:** 21 Requests Verified (Status Codes, Payloads, Auth).
+* **Database Scenarios:** 5 SQL / DB Integrity Scenarios Executed.
+* **Defect Management:** 6 Bugs Logged, Re-tested, & Resolved.
+* **Automated E2E Suite:** 14 Cypress Automation Scripts.
+* **CI/CD Pipeline:** Fully automated headless Chrome execution on every `push`/`PR`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+##  QA Documentation & Artifacts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+All testing artifacts are stored in the [`/docs`](./docs) directory:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*  **Requirements & RTM:** [`docs/studyflow_requirements_and_rtm.xlsx`](./docs)
+*  **Software Test Plan:** [`docs/studyflow_software_test_plan.pdf`](./docs)
+*  **Test Cases:** [`docs/studyflow_test_cases.xlsx`](./docs)
+*  **Bug Reports:** [`docs/studyflow_bug_reports.xlsx`](./docs)
+*  **API Collection:** [`docs/studyflow_api_collection.json`](./docs)
+*  **Database Testing:** [`docs/studyflow_database_testing.pdf`](./docs)
+*  **Test Result Report:** [`docs/studyflow_test_result_reporting.pdf`](./docs)
+
+---
+
+##  Running Cypress Tests Locally
+
+1. Clone the repository:
+   ```bash
+   git clone [https://github.com/mariami1029/studyflow.git](https://github.com/mariami1029/studyflow.git)
